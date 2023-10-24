@@ -1,8 +1,5 @@
 import streamlit as st
 from streamlit_extras.app_logo import add_logo
-import streamlit.components.v1 as components
-from streamlit_js_eval import streamlit_js_eval
-
 
 def header():
     add_logo("images/brasao1.png")
@@ -24,7 +21,7 @@ def header():
                 [data-testid="stSidebarNav"] {
                     background-position: 20px 40px;
                 }
-                                 
+
                 .st-emotion-cache-pkbazv {color: #fff;}
                 .st-emotion-cache-17lntkn {color: #dfdfdf}
                 
