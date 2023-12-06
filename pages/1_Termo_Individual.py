@@ -5,6 +5,8 @@ import streamlit.components.v1 as components
 from streamlit_js_eval import streamlit_js_eval
 import scripts.doc_individual as doc
 import time
+from dotenv import load_dotenv
+import os
 from io import BytesIO
 from data import scripts
 
@@ -38,6 +40,10 @@ def download_file(object, filename):
 def download_doc():
     buff = BytesIO()
     form.save(buff)
+    load_dotenv()
+    
+    path = os.getenv("DOCUMENTS_PATH") + filename
+    form.save(path)
     components.html(download_file(buff.getvalue(), filename), height=0)
 
 
@@ -181,6 +187,7 @@ if video:
 if True in (computador, monitor, mouse, teclado, forca, video): 
     
     try:
+
         _, col2, _ = st.columns(3)
         st.divider()
         
@@ -207,12 +214,10 @@ if True in (computador, monitor, mouse, teclado, forca, video):
                 st.success("Cadastro Realizado!")
                 
                 
-                
-                
                 with st.spinner(text="Limpando formulário"):
                     time.sleep(4)
                 streamlit_js_eval(js_expressions="parent.window.location.reload()")
-                
+            
     
-    except:  # noqa: E722
+    except :  # noqa: E722
         st.error("O documento se encontra aberto em alguma máquina.")
