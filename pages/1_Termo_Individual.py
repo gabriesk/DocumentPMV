@@ -5,7 +5,10 @@ import streamlit.components.v1 as components
 from streamlit_js_eval import streamlit_js_eval
 import scripts.doc_individual as doc
 import time
+from dotenv import load_dotenv
+import os
 from io import BytesIO
+from data import scripts
 
 st.set_page_config(
     page_title="Termo de Transferência Individual",
@@ -15,10 +18,9 @@ st.set_page_config(
 h.header()
 
 def download_file(object, filename):
-    
     try:
         b64 = base64.b64encode(object.encode()).decode()
-    except AttributeError as e:
+    except AttributeError as _:
         b64 = base64.b64encode(object).decode()
     
     dl_link = f"""
@@ -38,7 +40,13 @@ def download_file(object, filename):
 def download_doc():
     buff = BytesIO()
     form.save(buff)
+    load_dotenv()
+    
+    path = os.getenv("DOCUMENTS_PATH") + filename
+    form.save(path)
     components.html(download_file(buff.getvalue(), filename), height=0)
+
+
 
 
 st.header("Movimentação de Equipamentos")
@@ -49,16 +57,34 @@ col1.write("Identificação do Remetente")
 col2.write("Identificação do Destinatário")
 
 with col1:
-    nome_rem = st.text_input("Nome do Remetente")
     mat_rem = st.text_input("Matricula do Remetente")
-    setor_rem = st.text_input("Setor/Unidade Administrativa do Remetente")
+    placeholder = st.empty()
+    with placeholder.container():
+        st.text_input("Nome do Remetente", disabled=True)
+        st.text_input("Setor/Unidade Administrativa do Remetente", disabled=True)
     
+    if mat_rem:
+        placeholder.empty()
+        remetente = scripts.findServidor(mat_rem)      
+        nome_rem = st.text_input("Nome do Remetente", disabled=True, value=remetente[2])
+        setor_rem = st.text_input("Setor/Unidade Administrativa do Remetente", disabled=True, value=remetente[3])
     
-    
+del placeholder
+
 with col2:
-    nome_des = st.text_input("Nome do Destinatário")
     mat_des = st.text_input("Matricula do Destinatario")
-    setor_des = st.text_input("Setor/Unidade Administrativa do Destinatário")
+    placeholder = st.empty()
+    with placeholder.container():
+        st.text_input("Nome do Destinatário", disabled=True)
+        st.text_input("Setor/Unidade Administrativa do Destinatário", disabled=True)
+        
+    if mat_des:
+        placeholder.empty()
+        destinatario = scripts.findServidor(mat_des)
+        nome_des = st.text_input("Nome do Destinatário", disabled=True, value=destinatario[2])
+        setor_des = st.text_input("Setor/Unidade Administrativa do Destinatário", disabled=True, value=destinatario[3])
+
+del placeholder
 
 
 st.divider()
@@ -80,8 +106,8 @@ with col2:
                                 )
     else:
         devolucao =st.date_input("Data de Devolução:",
-                                 disabled=False,
-                                 format="DD/MM/YYYY"                              
+                                disabled=False,
+                                format="DD/MM/YYYY"                              
                                 )
 
 motivo = st.text_area("Motivo Detalhado da Transferência:")
@@ -143,8 +169,8 @@ if video:
     )
     
     opc_video = ["VGA", 
-               "DVI",
-               "HDMI",
+                "DVI",
+                "HDMI",
                 "DP",
                 "USB-C"]
     
@@ -161,6 +187,7 @@ if video:
 if True in (computador, monitor, mouse, teclado, forca, video): 
     
     try:
+
         _, col2, _ = st.columns(3)
         st.divider()
         
@@ -181,15 +208,16 @@ if True in (computador, monitor, mouse, teclado, forca, video):
                                 )
                 
                 download_doc()
+                
+                
+                
                 st.success("Cadastro Realizado!")
+                
                 
                 with st.spinner(text="Limpando formulário"):
                     time.sleep(4)
-                
-                
-                
                 streamlit_js_eval(js_expressions="parent.window.location.reload()")
-                
+            
     
-    except:
+    except :  # noqa: E722
         st.error("O documento se encontra aberto em alguma máquina.")
